@@ -175,14 +175,14 @@ bool DaemonCommandsHandler::set_log(const std::vector<std::string>& args)
 //--------------------------------------------------------------------------------
 bool DaemonCommandsHandler::print_block_by_height(uint32_t height)
 {
-  if (height - 1 > m_core.getTopBlockIndex()) {
-    std::cout << "block wasn't found. Current block chain height: " << m_core.getTopBlockIndex() + 1 << ", requested: " << height << std::endl;
+  if (height > m_core.getTopBlockIndex()) {
+    std::cout << "block wasn't found. Current block chain top block height: " << m_core.getTopBlockIndex() << ", requested: " << height << std::endl;
     return false;
   }
 
-  auto hash = m_core.getBlockHashByIndex(height - 1);
+  auto hash = m_core.getBlockHashByIndex(height);
   std::cout << "block_id: " << hash << ENDL;
-  print_as_json(m_core.getBlockByIndex(height - 1));
+  print_as_json(m_core.getBlockByIndex(height));
 
   return true;
 }
@@ -194,7 +194,10 @@ bool DaemonCommandsHandler::print_block_by_hash(const std::string& arg) {
   }
 
   if (m_core.hasBlock(block_hash)) {
-    print_as_json(m_core.getBlockByHash(block_hash));
+    if(m_core.hasBlockInMainChain(block_hash))
+      print_as_json(m_core.getBlockByHash(block_hash));
+    else
+      print_as_json(m_core.getAlternativeBlockByHash(block_hash));
   } else {
     std::cout << "block wasn't found: " << arg << std::endl;
     return false;
